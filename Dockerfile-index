@@ -26,4 +26,14 @@ RUN pip install \
     faiss-gpu \
     datasets==1.1.2 \
     fugashi \
-    protobuf==3.20.0
+    protobuf==3.20.0 \
+    filelock \
+    regex \
+    tqdm \
+    wget \
+    spacy \
+    omegaconf \
+    jsonlines \
+    soundfile \
+    editdistance \
+    dill==0.3.4

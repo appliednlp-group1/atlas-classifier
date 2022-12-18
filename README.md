@@ -1,6 +1,6 @@
 # Atlas Classifier
 
-## train retriever
+## train retriever on rag-japanese
 
 build docker image
 
@@ -83,4 +83,10 @@ $ docker run -it --rm \
   --context-model data/models/dpr_transformers/c_encoder \
   --knowledge-file app/data/knowledge.csv \
   --out-dir data/dataset/dpr_knowledge_index
+```
+
+inference by retriever
+
+```shell
+$ docker run -it 
 ```
