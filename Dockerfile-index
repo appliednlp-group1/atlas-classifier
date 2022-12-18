@@ -1,0 +1,29 @@
+FROM nvidia/cuda:11.5.0-runtime-ubuntu20.04
+USER root
+
+RUN apt-get update -y
+RUN apt-get upgrade -y
+RUN apt-get dist-upgrade -y
+RUN apt-get -y install locales && \
+    localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
+
+ENV LANG ja_JP.UTF-8
+ENV LANGUAGE ja_jp:ja
+ENV LC_ALL ja_jp.UTF-8
+ENV TZ JST-9
+ENV TERM xterm
+
+RUN apt-get install -y vim less python3.8 python3-pip
+RUN pip install -U pip setuptools
+RUN pip install \
+    numpy \
+    pandas \
+    matplotlib \
+    scikit-learn \
+    transformers==3.4.0 \
+    torch==1.6.0 \
+    ipadic \
+    faiss-gpu \
+    datasets==1.1.2 \
+    fugashi \
+    protobuf==3.20.0

@@ -1,0 +1,3 @@
+[submodule "rag-japanese"]
+	path = rag-japanese
+	url = https://github.com/NeverendingNotification/rag-japanese.git
