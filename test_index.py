@@ -17,7 +17,11 @@ def run(bert_model: str,
         dataset = load_dataset('ag_news')
         
         def process(example):
-            inputs = tokenizer(example['text'], truncation=True)
+            inputs = tokenizer(example['text'],
+                               truncation=True,
+                               pad_to_max_length=True,
+                               return_tensors='pt',
+                               )
             example['embeddings'] = q_encoder(
                 input_ids=torch.tensor(inputs['input_ids']).long().cuda(),
                 attention_mask=torch.tensor(inputs['attention_mask']).cuda(),
