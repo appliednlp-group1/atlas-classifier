@@ -1,3 +1,6 @@
 [submodule "rag-japanese"]
 	path = rag-japanese
 	url = https://github.com/NeverendingNotification/rag-japanese.git
+[submodule "atlas"]
+	path = atlas
+	url = https://github.com/appliednlp-group1/atlas.git
