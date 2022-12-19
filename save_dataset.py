@@ -31,7 +31,7 @@ def run(bert_model: str,
                 attention_mask=torch.tensor(inputs['attention_mask']).cuda(),
                 return_dict=True,
                 )[1].cpu().clone().detach().numpy().tolist()
-            example['title'] = ['']*batch_size
+            example['title'] = ['']*len(example['label'])
             return example
         
         dataset = dataset.map(process, batched=True, batch_size=batch_size)
