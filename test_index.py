@@ -18,8 +18,8 @@ def run(bert_model: str,
         def process(example):
             inputs = tokenizer(example['text'])
             example['embeddings'] = q_encoder(
-                input_ids=torch.tensor(inputs['input_ids']).long(),
-                attention_mask=torch.tensor(inputs['attention_mask']),
+                input_ids=torch.tensor([inputs['input_ids']]).long(),
+                attention_mask=torch.tensor([inputs['attention_mask']]),
                 return_dict=True,
                 )[0].cpu().detach().numpy().tolist()
             return example
