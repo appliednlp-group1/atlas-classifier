@@ -66,7 +66,6 @@ def run(bert_model: str,
     
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(atcls.parameters(), lr=lr)
-    optimizer.zero_grad()
     lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
                                                      get_lr_func(num_epochs))
     
@@ -83,7 +82,6 @@ def run(bert_model: str,
         
     for epoch in range(1, num_epochs + 1):
         atcls.train()
-        lr_scheduler.step()
         
         train_total = 0
         train_corrects = 0
@@ -91,10 +89,10 @@ def run(bert_model: str,
         for batch in tqdm(train_loader):
             pred = atcls(batch['input_ids'].to(device),
                          batch['attention_mask'].to(device))
+            optimizer.zero_grad()
             loss = criterion(pred, batch['label'])
             loss.backward()
             optimizer.step()
-            optimizer.zero_grad()
             
             train_losses.append(loss.item())
             
@@ -116,6 +114,8 @@ def run(bert_model: str,
                 
                 test_total += len(batch)
                 test_corrects += pred.eq(batch['label'].view_as(pred)).sum().item()
+
+        lr_scheduler.step()
         
         train_loss = np.mean(train_losses)
         test_loss = np.mean(test_losses)
