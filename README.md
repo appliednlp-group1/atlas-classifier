@@ -58,6 +58,14 @@ $ python save_dataset.py
 $ python train.py --batch_size 4 --out_dir p101_case1
 ```
 
+※ conda activate ができない場合
+
+```shell
+$ conda init bash
+$ exec $SHELL -l
+$ # 見た目上はsingularityから出た感じになるが、実はsingularityの中にいる
+$ conda activate atlas-env
+```
 
 ## train retriever on rag-japanese
 
