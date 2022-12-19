@@ -23,6 +23,7 @@ def _build_index(hidden_dim: int,
                  dataset_path: str,
                  ) -> CustomHFIndex:
     dataset = load_from_disk(dataset_path)
+    dataset['title'] = ''
     return CustomHFIndex(hidden_dim,
                          dataset['train'],
                          )
