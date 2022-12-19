@@ -1,4 +1,3 @@
-import torch
 import transformers
 from transformers.models.rag.retrieval_rag import CustomHFIndex
 from datasets import load_from_disk
@@ -14,8 +13,8 @@ def _build_g_tokenizer(bert_model: str) -> transformers.BertTokenizer:
 
 def build_config(bert_model: str,
                  contriever_model: str) -> transformers.RagConfig:
-    q_encoder = transformers.AutoConfig.from_pretrained(contriever_model)
-    classifier = transformers.AutoConfig.from_pretrained(bert_model)
+    q_encoder = transformers.AutoModel.from_pretrained(contriever_model)
+    classifier = transformers.AutoModel.from_pretrained(bert_model)
     return transformers.RagConfig(question_encoder=q_encoder.config.to_dict(),
                                   generator=classifier.config.to_dict())
 
