@@ -103,6 +103,7 @@ if __name__ == '__main__':
                        build_retriever(opt['question_model'],
                                        opt['indexdata_path'],
                                        opt['index_path']),
+                       0,
                        ).to(device)
     tokenizer = build_q_tokenizer(opt['question_model'])
     
