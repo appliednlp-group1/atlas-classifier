@@ -83,7 +83,7 @@ if __name__ == '__main__':
     q_encoder = build_q_encoder(opt['bert_model'],
                                 opt['contriever_path']).to(device)
 
-    inputs = tokenizer('2005年から2015年で埼玉県の人口は変わっていますか？')
+    inputs = tokenizer('The stock has fallen today.')
     enc_outputs = q_encoder(torch.Tensor([inputs['input_ids']]).long().to(device),
                             attention_mask=torch.Tensor([inputs['attention_mask']]).to(device),
                             return_dict=True)
