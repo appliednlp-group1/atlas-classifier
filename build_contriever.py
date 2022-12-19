@@ -72,7 +72,7 @@ if __name__ == '__main__':
         'bert_model': 'bert-base-uncased',
         'contriever_model': 'facebook/contriever',
         'contriever_path': '../models/models/atlas/base/model.pth.tar',
-        'dataset_path': '../data/datasets/',
+        'dataset_path': '../data/datasets/train',
         'index_path': '../data/datasets/agnews.faiss',
     }
     tokenizer = build_q_tokenizer(opt['contriever_model'])
