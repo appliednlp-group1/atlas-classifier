@@ -22,11 +22,11 @@ def build_config(bert_model: str,
 
 def _build_index(hidden_dim: int,
                  dataset_path: str,
+                 index_path: str,
                  ) -> CustomHFIndex:
-    dataset = load_from_disk(dataset_path)['train']
-    return CustomHFIndex(hidden_dim,
-                         dataset,
-                         )
+    return CustomHFIndex.load_from_disk(hidden_dim,
+                                        dataset_path,
+                                        index_path)
 
 
 def build_q_encoder(bert_model: str,
@@ -49,6 +49,7 @@ def build_q_encoder(bert_model: str,
 def build_retriever(bert_model: str,
                     contriever_model: str,
                     dataset_path: str,
+                    index_path: str,
                     hidden_dim: int = 786,
                     ) -> transformers.RagRetriever:
     config = build_config(bert_model,
@@ -56,7 +57,8 @@ def build_retriever(bert_model: str,
     q_tokenizer = build_q_tokenizer(contriever_model)
     g_tokenizer = _build_g_tokenizer(bert_model)
     index = _build_index(hidden_dim,
-                         dataset_path)
+                         dataset_path,
+                         index_path)
     return transformers.RagRetriever(config,
                                      q_tokenizer,
                                      g_tokenizer,
@@ -71,14 +73,16 @@ if __name__ == '__main__':
         'contriever_model': 'facebook/contriever',
         'contriever_path': '../models/models/atlas/base/model.pth.tar',
         'dataset_path': '../data/datasets/',
+        'index_path': '../data/datasets/agnews.faiss',
     }
     tokenizer = build_q_tokenizer(opt['contriever_model'])
     retriever = build_retriever(opt['bert_model'],
                                 opt['contriever_model'],
-                                opt['dataset_path'])
+                                opt['dataset_path'],
+                                opt['index_path'])
     q_encoder = build_q_encoder(opt['bert_model'],
-                                opt['contriever_path'])
-    
+                                opt['contriever_path']).to(device)
+
     inputs = tokenizer('2005年から2015年で埼玉県の人口は変わっていますか？')
     enc_outputs = q_encoder(torch.Tensor([inputs['input_ids']]).long().to(device),
                             attention_mask=torch.Tensor([inputs['attention_mask']]).to(device),
