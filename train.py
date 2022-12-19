@@ -97,7 +97,7 @@ def run(bert_model: str,
             
             train_losses.append(loss.item())
             
-            _, y = torch.max(pred, 1)
+            _, y = torch.max(pred.cpu(), 1)
             train_total += len(batch)
             train_corrects += (y == batch['label']).sum().item()
             
@@ -115,7 +115,7 @@ def run(bert_model: str,
                 
                 test_losses.append(loss.item())
                 
-                _, y = torch.max(pred, 1)
+                _, y = torch.max(pred.cpu(), 1)
                 test_total += len(batch)
                 test_corrects += (y == batch['label']).sum().item()
 
