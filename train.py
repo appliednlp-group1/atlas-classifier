@@ -87,8 +87,9 @@ def run(bert_model: str,
         train_corrects = 0
         train_losses = []
         for batch in tqdm(train_loader):
-            pred = atcls(batch['input_ids'].to(device),
-                         batch['attention_mask'].to(device))
+            out = atcls(batch['input_ids'].to(device),
+                        batch['attention_mask'].to(device))
+            pred = out['logits']
             optimizer.zero_grad()
             loss = criterion(pred, batch['label'])
             loss.backward()
@@ -106,8 +107,9 @@ def run(bert_model: str,
         test_losses = []
         with torch.no_grad():
             for batch in tqdm(test_loader):
-                pred = atcls(batch['input_ids'].to(device),
-                             batch['attention_mask'].to(device))
+                out = atcls(batch['input_ids'].to(device),
+                            batch['attention_mask'].to(device))
+                pred = out['logits']
                 loss = criterion(pred, batch['label'])
                 
                 test_losses.append(loss.item())
