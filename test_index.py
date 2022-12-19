@@ -28,9 +28,10 @@ def run(bert_model: str,
     
     index = CustomHFIndex(768,
                           dataset)
+    print(index)
 
 
 if __name__ == '__main__':
     run('bert-base-uncased',
         'facebook/contriever',
-        'data/models/')
+        '../models/models/atlas/base/model.pth.tar')
