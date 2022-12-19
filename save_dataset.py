@@ -28,7 +28,8 @@ def run(bert_model: str,
                 input_ids=torch.tensor(inputs['input_ids']).long().cuda(),
                 attention_mask=torch.tensor(inputs['attention_mask']).cuda(),
                 return_dict=True,
-                )[0].cpu().clone().detach().numpy().tolist()
+                )[1].cpu().clone().detach().numpy().tolist()
+            example['title'] = ['']*64
             return example
         
         dataset = dataset.map(process, batched=True, batch_size=64)

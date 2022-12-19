@@ -22,12 +22,14 @@ class AtclsModel(AtclsPreTrainedModel):
                  question_encoder: PreTrainedModel,
                  classifier: Any,
                  retriever: RagRetriever,
+                 last_layer: int = 1,  # dpretriever : 0
                  ):
         super().__init__(config)
         
         self.question_encoder = question_encoder
         self.classifier = classifier
         self.retriever = retriever
+        self.last_layer = last_layer
         
         self.n_docs = config.n_docs
         self.output_attentions = config.output_attentions
@@ -40,7 +42,7 @@ class AtclsModel(AtclsPreTrainedModel):
         question_enc_outputs = self.question_encoder(input_ids,
                                                      attention_mask=attention_mask,
                                                      return_dict=True)
-        question_encoder_last_hidden_state = question_enc_outputs[0]
+        question_encoder_last_hidden_state = question_enc_outputs[self.last_layer]
         
         retriever_outputs = self.retriever(input_ids,
                                            question_encoder_last_hidden_state.cpu().detach().to(torch.float32).numpy(),

@@ -1,3 +1,4 @@
+import torch
 import transformers
 from transformers.models.rag.retrieval_rag import CustomHFIndex
 from datasets import load_from_disk
@@ -69,8 +70,6 @@ def build_retriever(bert_model: str,
 
 
 if __name__ == '__main__':
-    import torch
-    
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     
     opt = {
@@ -91,7 +90,7 @@ if __name__ == '__main__':
                             attention_mask=torch.Tensor([inputs['attention_mask']]).to(device),
                             return_dict=True)
     out = retriever(torch.Tensor([inputs['input_ids']]).long(),
-                    enc_outputs[0].cpu().clone().detach().to(torch.float32).numpy(),
+                    enc_outputs[1].cpu().clone().detach().to(torch.float32).numpy(),
                     n_docs=5,
                     return_tensors='pt')
     ans = tokenizer.batch_decode(out['context_input_ids'],
