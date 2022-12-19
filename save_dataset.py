@@ -9,7 +9,9 @@ from build_contriever import build_q_encoder, build_q_tokenizer
 def run(bert_model: str,
         contriever_model: str,
         contriever_path: str,
-        index_dir: str) -> None:
+        index_dir: str,
+        batch_size: int = 128,
+        ) -> None:
     tokenizer = build_q_tokenizer(contriever_model)
     q_encoder = build_q_encoder(bert_model, contriever_path)
     q_encoder.cuda()
@@ -29,10 +31,10 @@ def run(bert_model: str,
                 attention_mask=torch.tensor(inputs['attention_mask']).cuda(),
                 return_dict=True,
                 )[1].cpu().clone().detach().numpy().tolist()
-            example['title'] = ['']*64
+            example['title'] = ['']*batch_size
             return example
         
-        dataset = dataset.map(process, batched=True, batch_size=64)
+        dataset = dataset.map(process, batched=True, batch_size=batch_size)
     
     dataset.save_to_disk(os.path.join(index_dir, 'datasets'))
     dataset.save_faiss_index('agnews', os.path.join(index_dir, 'agnews.faiss'))
