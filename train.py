@@ -97,8 +97,9 @@ def run(bert_model: str,
             
             train_losses.append(loss.item())
             
+            _, y = torch.max(pred, 1)
             train_total += len(batch)
-            train_corrects += pred.eq(batch['label'].view_as(pred)).sum().item()
+            train_corrects += (y == batch['label']).sum().item()
             
         atcls.eval()
         
@@ -114,8 +115,9 @@ def run(bert_model: str,
                 
                 test_losses.append(loss.item())
                 
+                _, y = torch.max(pred, 1)
                 test_total += len(batch)
-                test_corrects += pred.eq(batch['label'].view_as(pred)).sum().item()
+                test_corrects += (y == batch['label']).sum().item()
 
         lr_scheduler.step()
         
