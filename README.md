@@ -105,3 +105,14 @@ $ docker run -it --rm \
   -v $(pwd):/app atcls:latest \
   python3 /app/atlas_classifier.py
 ```
+
+## ag_news
+
+```shell
+$ docker run -it --rm \
+  --gpus all \
+  -v $(pwd):/app atcls:latest \
+  python3 /app/dataloader.py
+```
+
+
