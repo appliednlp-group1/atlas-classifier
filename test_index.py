@@ -29,7 +29,7 @@ def run(bert_model: str,
                 )[0].cpu().detach().numpy().tolist()
             return example
         
-        dataset = dataset.map(process, batched=True)
+        dataset = dataset.map(process, batched=True, batch_size=64)
     
     index = CustomHFIndex(768,
                           dataset)
