@@ -24,7 +24,7 @@ def _build_index(hidden_dim: int,
                  ) -> CustomHFIndex:
     dataset = load_from_disk(dataset_path)
     return CustomHFIndex(hidden_dim,
-                         dataset,
+                         dataset['train'],
                          )
 
 
