@@ -91,7 +91,7 @@ def run(bert_model: str,
                         batch['attention_mask'].to(device))
             pred = out['logits']
             optimizer.zero_grad()
-            loss = criterion(pred, batch['label'])
+            loss = criterion(pred, batch['label'].to(device))
             loss.backward()
             optimizer.step()
             
@@ -110,7 +110,7 @@ def run(bert_model: str,
                 out = atcls(batch['input_ids'].to(device),
                             batch['attention_mask'].to(device))
                 pred = out['logits']
-                loss = criterion(pred, batch['label'])
+                loss = criterion(pred, batch['label'].to(device))
                 
                 test_losses.append(loss.item())
                 
