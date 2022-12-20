@@ -29,7 +29,7 @@ $ singularity pull pytorch_22.03-py3.sif docker://nvcr.io/nvidia/pytorch:22.03-p
 次に、singularityインスタンスに入る
 
 ```shell
-$ singularity exec --nv ./<your singularity file name>
+$ singularity shell --nv ./<your singularity file name>
 ```
 
 以下はインスタンス内で行う
