@@ -11,7 +11,7 @@ $ git clone --recursive https://github.com/appliednlp-group1/atlas-classifier.gi
 次に、p系の環境にログインする
 
 ```shell
-$ srun -p p -t 10:00:00 --gres=gpu:1 --mem=128GB bash
+$ srun -p p -t 10:00:00 --gres=gpu:1 --mem=128GB --pty bash
 ```
 
 次のコマンドは毎回実行する必要がある
