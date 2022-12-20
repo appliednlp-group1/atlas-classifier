@@ -68,8 +68,11 @@ def run(bert_model: str,
     optimizer = torch.optim.Adam(atcls.parameters(), lr=lr)
     lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
                                                      get_lr_func(num_epochs))
-    
+
     atcls.to(device)
+    if device == 'cuda':
+        atcls = torch.nn.DataParallel(atcls) # make parallel
+        torch.backends.cudnn.benchmark = True
     
     with open(os.path.join(out_dir, 'result.csv'), 'a') as f:
         csv.writer(f).writerow([
