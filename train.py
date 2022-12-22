@@ -61,14 +61,9 @@ def run(bert_model: str,
                                    use_ratio=use_ratio)
     
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam([
-        {
-            'question_encoder': q_encoder.parameters(),
-        },
-        {
-            'classifier': classifier.parameters(),
-        }
-    ], lr=lr)
+    optimizer = torch.optim.Adam([{'params': q_encoder.parameters()},
+                                  {'params': classifier.parameters()}
+                                  ], lr=lr)
 
     with open(os.path.join(out_dir, 'result.csv'), 'a') as f:
         csv.writer(f).writerow([
