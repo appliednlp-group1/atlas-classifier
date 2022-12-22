@@ -11,11 +11,12 @@ def forward(input_ids: Optional[torch.LongTensor],
             classifier: PreTrainedModel,
             n_docs: int = 5,
             output_attentions: bool = True,
+            last_layer: int = 1,
             ) -> Dict[str, torch.Tensor]:
     question_enc_outputs = question_encoder(input_ids,
                                             attention_mask=attention_mask,
                                             return_dict=True)
-    question_encoder_last_hidden_state = question_enc_outputs[self.last_layer]
+    question_encoder_last_hidden_state = question_enc_outputs[last_layer]
     
     retriever_outputs = retriever(input_ids,
                                   question_encoder_last_hidden_state.cpu().detach().to(torch.float32).numpy(),
