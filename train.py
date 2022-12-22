@@ -199,7 +199,7 @@ if __name__ == '__main__':
                         default='results/test1')
     parser.add_argument('--use_ratio',
                         type=str,
-                        default=0.01)
+                        default=0.1)
     
     args = parser.parse_args()
     
