@@ -1,20 +1,24 @@
 import torch
 from datasets import load_dataset
 from torch.utils.data import DataLoader
+from torch.utils.data.sampler import BatchSampler
 
 
 def build_dataloader(dataset_name: str,
                      tokenizer,
                      batch_size: int,
-                     phase: str = 'train') -> DataLoader:
+                     phase: str = 'train',
+                     use_ratio: float = 1.0) -> DataLoader:
     assert phase in ('train', 'test')
     dataset = load_dataset(dataset_name)[phase]
+    use_num = int(len(dataset) * use_ratio)
+    dataset, _ = torch.utils.data.random_split(dataset, [use_num, len(dataset) - use_num])
     
     def get_collater(t):
         def collater(d):
             x = t.batch_encode_plus(
                 [r['text'] for r in d],
-                pad_to_max_length=True,
+                padding='longest',
                 return_tensors='pt',
                 truncation=True,
                 )
