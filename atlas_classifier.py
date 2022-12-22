@@ -1,87 +1,60 @@
 from typing import Dict, Optional, Any
 
 import torch
-from transformers import PreTrainedModel, PretrainedConfig
-from transformers.models.rag.retrieval_rag import RagRetriever, RagConfig
+from transformers import PreTrainedModel
 
 
-class AtclsPreTrainedModel(PreTrainedModel):
-    config_class = RagConfig
-    base_model_prefix = 'atcls'
-    _keys_to_ignore_on_load_missing = ['position_ids']
+def forward(input_ids: Optional[torch.LongTensor],
+            attention_mask: Optional[torch.Tensor],
+            question_encoder: PreTrainedModel,
+            retriever: Any,
+            classifier: PreTrainedModel,
+            n_docs: int = 5,
+            output_attentions: bool = True,
+            ) -> Dict[str, torch.Tensor]:
+    question_enc_outputs = question_encoder(input_ids,
+                                            attention_mask=attention_mask,
+                                            return_dict=True)
+    question_encoder_last_hidden_state = question_enc_outputs[self.last_layer]
     
-    @classmethod
-    def from_pretrained(cls, *args, **kwargs):
-        kwargs['_fast_init'] = False
-        return super().from_pretrained(*args, **kwargs)
-
-
-class AtclsModel(AtclsPreTrainedModel):
-    def __init__(self,
-                 config: Optional[PretrainedConfig] = None,
-                 question_encoder: Optional[PreTrainedModel] = None,
-                 classifier: Optional[Any] = None,
-                 retriever: Optional[RagRetriever] = None,
-                 last_layer: int = 1,  # dpretriever : 0
-                 ):
-        super().__init__(config)
-        
-        self.question_encoder = question_encoder
-        self.classifier = classifier
-        self.retriever = retriever
-        self.last_layer = last_layer
-        
-        self.n_docs = config.n_docs
-        self.output_attentions = config.output_attentions
-        self.output_retrieved = config.output_retrieved
-        
-    def forward(self,
-                input_ids: Optional[torch.LongTensor],
-                attention_mask: Optional[torch.Tensor],
-                ) -> Dict[str, torch.Tensor]:
-        question_enc_outputs = self.question_encoder(input_ids,
-                                                     attention_mask=attention_mask,
-                                                     return_dict=True)
-        question_encoder_last_hidden_state = question_enc_outputs[self.last_layer]
-        
-        retriever_outputs = self.retriever(input_ids,
-                                           question_encoder_last_hidden_state.cpu().detach().to(torch.float32).numpy(),
-                                           prefix=self.retriever.config.prefix,
-                                           n_docs=self.n_docs,
-                                           return_tensors='pt')
-        
-        context_input_ids = retriever_outputs['context_input_ids'].to(input_ids)
-        context_attention_mask = retriever_outputs['context_attention_mask'].to(input_ids)
-        retrieved_doc_embeds = retriever_outputs['retrieved_doc_embeds'].to(question_encoder_last_hidden_state)
-        retrieved_doc_ids = retriever_outputs['doc_ids']
-        
-        doc_scores = torch.bmm(question_encoder_last_hidden_state.unsqueeze(1),
-                               retrieved_doc_embeds.transpose(1, 2),
-                               ).squeeze(1)
-        
-        cls_outputs = self.classifier(input_ids=context_input_ids,
-                                      attention_mask=context_attention_mask,
-                                      output_attentions=self.output_attentions,
-                                      return_dict=True)
-        cls_logits = cls_outputs.logits
-        
-        logits = (
+    retriever_outputs = retriever(input_ids,
+                                  question_encoder_last_hidden_state.cpu().detach().to(torch.float32).numpy(),
+                                  prefix=retriever.config.prefix,
+                                  n_docs=n_docs,
+                                  return_tensors='pt')
+    
+    context_input_ids = retriever_outputs['context_input_ids'].to(input_ids)
+    context_attention_mask = retriever_outputs['context_attention_mask'].to(input_ids)
+    retrieved_doc_embeds = retriever_outputs['retrieved_doc_embeds'].to(question_encoder_last_hidden_state)
+    retrieved_doc_ids = retriever_outputs['doc_ids']
+    
+    doc_scores = torch.bmm(question_encoder_last_hidden_state.unsqueeze(1),
+                           retrieved_doc_embeds.transpose(1, 2),
+                           ).squeeze(1)
+    
+    cls_outputs = classifier(input_ids=context_input_ids,
+                             attention_mask=context_attention_mask,
+                             output_attentions=output_attentions,
+                             return_dict=True)
+    cls_logits = cls_outputs.logits
+    
+    logits = (
             (doc_scores.unsqueeze(2) * cls_logits.view(*doc_scores.shape, cls_logits.shape[1])).sum(axis=1)
             / (doc_scores.unsqueeze(2).sum(axis=1))
-        )
-        
-        return {
-            'doc_scores': doc_scores,
-            'context_input_ids': context_input_ids,
-            'context_attention_mask': context_attention_mask,
-            'retrieved_doc_embeds': retrieved_doc_embeds,
-            'retrieved_doc_ids': retrieved_doc_ids,
-            'question_enc_last_hidden_state': question_encoder_last_hidden_state,
-            'question_enc_hidden_states': question_enc_outputs.hidden_states,
-            'question_enc_attentions': question_enc_outputs.attentions,
-            'classifier_logits': cls_logits,
-            'logits': logits,
-        }
+    )
+    
+    return {
+        'doc_scores': doc_scores,
+        'context_input_ids': context_input_ids,
+        'context_attention_mask': context_attention_mask,
+        'retrieved_doc_embeds': retrieved_doc_embeds,
+        'retrieved_doc_ids': retrieved_doc_ids,
+        'question_enc_last_hidden_state': question_encoder_last_hidden_state,
+        'question_enc_hidden_states': question_enc_outputs.hidden_states,
+        'question_enc_attentions': question_enc_outputs.attentions,
+        'classifier_logits': cls_logits,
+        'logits': logits,
+    }
 
 
 if __name__ == '__main__':
@@ -97,21 +70,25 @@ if __name__ == '__main__':
         'bert_path': '/app/data/models/small_bert',
     }
     
-    atcls = AtclsModel(build_config(opt['question_model']),
-                       build_q_encoder(opt['question_model']),
-                       build_classifier(opt['bert_path'], 3),
-                       build_retriever(opt['question_model'],
-                                       opt['indexdata_path'],
-                                       opt['index_path']),
-                       0,
-                       ).to(device)
+    config = build_config(opt['question_model']).to(device)
+    q_encoder = build_q_encoder(opt['question_model']).to(device)
+    clasifier = build_classifier(opt['bert_path'], 3).to(device)
+    retriever = build_retriever(opt['question_model'],
+                                opt['indexdata_path'],
+                                opt['index_path'])
     tokenizer = build_q_tokenizer(opt['question_model'])
     
     inputs = tokenizer('2005年から2015年で埼玉県の人口は変わっていますか？')
     ids = torch.Tensor([inputs['input_ids'] for _ in range(2)]).long().to(device)
     mask = torch.Tensor([inputs['attention_mask'] for _ in range(2)]).to(device)
     
-    out = atcls(ids,
-                mask)
+    out = forward(ids,
+                  mask,
+                  q_encoder,
+                  retriever,
+                  clasifier,
+                  n_docs=config.n_docs,
+                  output_attentions=config.output_attentions,
+                  )
 
     print(out['logits'])

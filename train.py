@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from build_contriever import build_config, build_q_tokenizer, build_q_encoder, build_retriever
 from build_classifier import build_classifier
-from atlas_classifier import AtclsModel
+from atlas_classifier import forward
 from dataloader import build_dataloader
 
 DEFAULT_RETRIEVER_MODEL_PATH = 'facebook/contriever'
@@ -47,13 +47,8 @@ def run(bert_model: str,
         classifier = torch.nn.DataParallel(classifier)
         q_encoder.to(device)
         classifier.to(device)
+        torch.backends.cudnn.benchmark = True
 
-    atcls = AtclsModel(config,
-                       q_encoder,
-                       classifier,
-                       retriever,
-                       )
-    
     train_loader = build_dataloader('ag_news',
                                     tokenizer,
                                     batch_size,
@@ -66,13 +61,15 @@ def run(bert_model: str,
                                    use_ratio=use_ratio)
     
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(atcls.parameters(), lr=lr)
+    optimizer = torch.optim.Adam([
+        {
+            'question_encoder': q_encoder.parameters(),
+        },
+        {
+            'classifier': classifier.parameters(),
+        }
+    ], lr=lr)
 
-    if device == 'cuda':
-        atcls = torch.nn.DataParallel(atcls)  # make parallel
-        atcls.to(device)
-        torch.backends.cudnn.benchmark = True
-    
     with open(os.path.join(out_dir, 'result.csv'), 'a') as f:
         csv.writer(f).writerow([
             'dt',
@@ -83,7 +80,8 @@ def run(bert_model: str,
             'test_acc'])
         
     for epoch in range(1, num_epochs + 1):
-        atcls.train()
+        q_encoder.train()
+        classifier.train()
         
         train_total = 0
         train_corrects = 0
@@ -94,8 +92,14 @@ def run(bert_model: str,
                     batch['attention_mask'].to(device),
                     batch['label'].to(device),
                     )
-            out = atcls(input_ids,
-                        attention_mask)
+            out = forward(input_ids,
+                          attention_mask,
+                          q_encoder,
+                          retriever,
+                          classifier,
+                          n_docs=config.n_docs,
+                          output_attentions=config.output_attentions,
+                          )
             pred = out['logits']
             optimizer.zero_grad()
             loss = criterion(pred, label)
@@ -108,7 +112,8 @@ def run(bert_model: str,
             train_total += len(batch['label'])
             train_corrects += (y == batch['label']).sum().item()
             
-        atcls.eval()
+        q_encoder.eval()
+        classifier.eval()
         
         test_total = 0
         test_corrects = 0
@@ -120,8 +125,14 @@ def run(bert_model: str,
                         batch['attention_mask'].to(device),
                         batch['label'].to(device),
                         )
-                out = atcls(input_ids,
-                            attention_mask)
+                out = forward(input_ids,
+                              attention_mask,
+                              q_encoder,
+                              retriever,
+                              classifier,
+                              n_docs=config.n_docs,
+                              output_attentions=config.output_attentions,
+                              )
                 pred = out['logits']
                 loss = criterion(pred, label)
                 
@@ -155,17 +166,23 @@ def run(bert_model: str,
         epoch_tok_dir = os.path.join(epoch_dir, 'tokenizer')
         os.makedirs(epoch_tok_dir, exist_ok=True)
         tokenizer.save_pretrained(epoch_tok_dir)
-        epoch_mod_dir = os.path.join(epoch_dir, 'model')
-        os.makedirs(epoch_mod_dir, exist_ok=True)
-        atcls.save_pretrained(epoch_mod_dir)
+        epoch_q_encoder_dir = os.path.join(epoch_dir, 'model/q_encoder')
+        os.makedirs(epoch_q_encoder_dir, exist_ok=True)
+        q_encoder.save_pretrained(epoch_q_encoder_dir)
+        epoch_classifier_dir = os.path.join(epoch_dir, 'model/classifier')
+        os.makedirs(epoch_classifier_dir, exist_ok=True)
+        classifier.save_pretrained(epoch_classifier_dir)
 
     last_dir = os.path.join(out_dir, f'elast')
     last_tok_dir = os.path.join(last_dir, 'tokenizer')
     os.makedirs(last_tok_dir, exist_ok=True)
     tokenizer.save_pretrained(last_tok_dir)
-    last_mod_dir = os.path.join(last_dir, 'model')
-    os.makedirs(last_mod_dir, exist_ok=True)
-    atcls.save_pretrained(last_mod_dir)
+    last_q_encoder_dir = os.path.join(last_dir, 'model/q_encoder')
+    os.makedirs(last_q_encoder_dir, exist_ok=True)
+    q_encoder.save_pretrained(last_q_encoder_dir)
+    last_classifier_dir = os.path.join(last_dir, 'model/classifier')
+    os.makedirs(last_classifier_dir, exist_ok=True)
+    q_encoder.save_pretrained(last_classifier_dir)
 
 
 if __name__ == '__main__':
