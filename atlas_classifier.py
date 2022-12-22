@@ -18,10 +18,10 @@ class AtclsPreTrainedModel(PreTrainedModel):
 
 class AtclsModel(AtclsPreTrainedModel):
     def __init__(self,
-                 config: PretrainedConfig,
-                 question_encoder: PreTrainedModel,
-                 classifier: Any,
-                 retriever: RagRetriever,
+                 config: Optional[PretrainedConfig] = None,
+                 question_encoder: Optional[PreTrainedModel] = None,
+                 classifier: Optional[Any] = None,
+                 retriever: Optional[RagRetriever] = None,
                  last_layer: int = 1,  # dpretriever : 0
                  ):
         super().__init__(config)

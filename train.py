@@ -16,7 +16,6 @@ from dataloader import build_dataloader
 DEFAULT_RETRIEVER_MODEL_PATH = 'facebook/contriever'
 
 
-
 def run(bert_model: str,
         contriever_model: str,
         contriever_path: str,
@@ -70,7 +69,7 @@ def run(bert_model: str,
     optimizer = torch.optim.Adam(atcls.parameters(), lr=lr)
 
     if device == 'cuda':
-        atcls = torch.nn.DataParallel(atcls) # make parallel
+        atcls = torch.nn.DataParallel(atcls)  # make parallel
         atcls.to(device)
         torch.backends.cudnn.benchmark = True
     

@@ -1,7 +1,6 @@
 import torch
 import transformers
 from transformers.models.rag.retrieval_rag import CustomHFIndex
-from datasets import load_from_disk
 
 
 def build_q_tokenizer(contriever_model: str) -> transformers.AutoTokenizer:
