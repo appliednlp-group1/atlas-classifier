@@ -82,7 +82,7 @@ def run(out_dir: str,
                 target_texts = [t.split(r'/ ')[1].split(r' / / ')[0] for t in target_texts]
                 results.append({
                     'source_text': source_text,
-                    'doc_score': doc_score,
+                    'doc_score': float(doc_score),
                     'target_texts': target_texts,
                 })
     
