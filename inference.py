@@ -82,8 +82,13 @@ def run(out_dir: str,
                 target_texts = [t.split(r'/ ')[1].split(r' / / ')[0] for t in target_texts]
                 results.append({
                     'source_text': source_text,
-                    'doc_score': float(doc_score),
-                    'target_texts': target_texts,
+                    'targets': [
+                        {
+                            'score': doc_score[j],
+                            'text': target_texts[j],
+                        }
+                        for j in range(config.n_docs)
+                    ]
                 })
     
     with open(os.path.join(out_dir, 'inference.json'), 'w') as f:
