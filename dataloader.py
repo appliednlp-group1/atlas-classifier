@@ -1,7 +1,6 @@
 import torch
 from datasets import load_dataset
 from torch.utils.data import DataLoader
-from torch.utils.data.sampler import BatchSampler
 
 
 def build_dataloader(dataset_name: str,
