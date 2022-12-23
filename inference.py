@@ -84,7 +84,7 @@ def run(out_dir: str,
                     'source_text': source_text,
                     'targets': [
                         {
-                            'score': doc_score[j],
+                            'score': float(doc_score[j]),
                             'text': target_texts[j],
                         }
                         for j in range(config.n_docs)
