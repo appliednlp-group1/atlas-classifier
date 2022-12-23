@@ -61,8 +61,9 @@ def run(bert_model: str,
                                    use_ratio=use_ratio)
     
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(classifier.parameters(),
-                                 lr=lr)
+    optimizer = torch.optim.Adam([{'params': q_encoder.parameters()},
+                                  {'params': classifier.parameters()}
+                                  ], lr=lr)
 
     with open(os.path.join(out_dir, 'result.csv'), 'a') as f:
         csv.writer(f).writerow([
@@ -72,11 +73,11 @@ def run(bert_model: str,
             'test_loss',
             'train_acc',
             'test_acc'])
-
-    q_encoder.eval()
+        
     for epoch in range(1, num_epochs + 1):
+        q_encoder.train()
         classifier.train()
-
+        
         train_total = 0
         train_corrects = 0
         train_losses = []
@@ -99,13 +100,14 @@ def run(bert_model: str,
             loss = criterion(pred, label)
             loss.backward()
             optimizer.step()
-
+            
             train_losses.append(loss.item())
-
+            
             _, y = torch.max(pred.cpu(), 1)
             train_total += len(batch['label'])
             train_corrects += (y == batch['label']).sum().item()
-
+            
+        q_encoder.eval()
         classifier.eval()
         
         test_total = 0
@@ -159,12 +161,12 @@ def run(bert_model: str,
         epoch_tok_dir = os.path.join(epoch_dir, 'tokenizer')
         os.makedirs(epoch_tok_dir, exist_ok=True)
         tokenizer.save_pretrained(epoch_tok_dir)
-        # epoch_q_encoder_dir = os.path.join(epoch_dir, 'model/q_encoder')
-        # os.makedirs(epoch_q_encoder_dir, exist_ok=True)
-        # if device == 'cuda:0':
-        #     q_encoder.module.save_pretrained(epoch_q_encoder_dir)
-        # else:
-        #     q_encoder.save_pretrained(epoch_q_encoder_dir)
+        epoch_q_encoder_dir = os.path.join(epoch_dir, 'model/q_encoder')
+        os.makedirs(epoch_q_encoder_dir, exist_ok=True)
+        if device == 'cuda:0':
+            q_encoder.module.save_pretrained(epoch_q_encoder_dir)
+        else:
+            q_encoder.save_pretrained(epoch_q_encoder_dir)
         epoch_classifier_dir = os.path.join(epoch_dir, 'model/classifier')
         os.makedirs(epoch_classifier_dir, exist_ok=True)
         if device == 'cuda:0':
@@ -218,3 +220,5 @@ if __name__ == '__main__':
         args.lr,
         args.out_dir,
         args.use_ratio)
+
+    
