@@ -4,7 +4,7 @@ import json
 
 import torch
 import transformers
-from transformers import BertModel
+from transformers import BertModel, BertForSequenceClassification
 from tqdm import tqdm
 
 from dataloader import build_dataloader
@@ -24,7 +24,7 @@ def run(out_dir: str,
     
     tokenizer = transformers.AutoTokenizer.from_pretrained(os.path.join(out_dir, 'tokenizer'))
     q_encoder = BertModel.from_pretrained(os.path.join(out_dir, 'model/q_encoder'))
-    classifier = BertModel.from_pretrained(os.path.join(out_dir, 'model/classifier'))
+    classifier = BertForSequenceClassification.from_pretrained(os.path.join(out_dir, 'model/classifier'))
     
     if device == 'cuda:0':
         q_encoder = torch.nn.DataParallel(q_encoder)
