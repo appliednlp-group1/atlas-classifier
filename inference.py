@@ -8,13 +8,14 @@ from transformers import BertModel, BertForSequenceClassification
 from tqdm import tqdm
 
 from dataloader import build_dataloader
-from build_contriever import build_retriever, build_config
+from build_contriever import build_retriever, build_config, build_q_encoder
 from atlas_classifier import forward
 
 
 def run(out_dir: str,
         bert_model: str,
         contriever_model: str,
+        contriever_path: str,
         dataset_path: str,
         index_path: str,
         batch_size: int,
@@ -23,7 +24,9 @@ def run(out_dir: str,
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     
     tokenizer = transformers.AutoTokenizer.from_pretrained(os.path.join(out_dir, 'tokenizer'))
-    q_encoder = BertModel.from_pretrained(os.path.join(out_dir, 'model/q_encoder'))
+    q_encoder = build_q_encoder(bert_model,
+                                contriever_path,
+                                )
     classifier = BertForSequenceClassification.from_pretrained(os.path.join(out_dir, 'model/classifier'))
     
     if device == 'cuda:0':
@@ -103,6 +106,9 @@ if __name__ == '__main__':
     parser.add_argument('--contriever_model',
                         type=str,
                         default='facebook/contriever')
+    parser.add_argument('--contriever_path',
+                        type=str,
+                        default='models/models/atlas/base/model.pth.tar')
     parser.add_argument('--dataset_path',
                         type=str,
                         default='data/datasets/train')
@@ -124,6 +130,7 @@ if __name__ == '__main__':
     run(args.out_dir,
         args.bert_model,
         args.contriever_model,
+        args.contriever_path,
         args.dataset_path,
         args.index_path,
         args.batch_size,
