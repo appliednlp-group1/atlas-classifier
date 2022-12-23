@@ -1,3 +1,4 @@
+import argparse
 import os
 import json
 
@@ -87,3 +88,39 @@ def run(out_dir: str,
     
     with open(os.path.join(out_dir, 'inference.json'), 'w') as f:
         json.dump(results, f, indent=4)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--bert_model',
+                        type=str,
+                        default='bert-base-uncased')
+    parser.add_argument('--contriever_model',
+                        type=str,
+                        default='facebook/contriever')
+    parser.add_argument('--dataset_path',
+                        type=str,
+                        default='data/datasets/train')
+    parser.add_argument('--index_path',
+                        type=str,
+                        default='data/datasets/agnews.faiss')
+    parser.add_argument('--batch_size',
+                        type=int,
+                        default=8)
+    parser.add_argument('--out_dir',
+                        type=str,
+                        default='results/test1')
+    parser.add_argument('--use_ratio',
+                        type=str,
+                        default=0.1)
+    
+    args = parser.parse_args()
+    
+    run(args.out_dir,
+        args.bert_model,
+        args.contriever_model,
+        args.dataset_path,
+        args.index_path,
+        args.batch_size,
+        args.use_ratio,
+        )
