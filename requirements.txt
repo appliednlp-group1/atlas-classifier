@@ -1,6 +1,4 @@
 datasets
-faiss
-faiss-gpu
 optuna
 pandas
 rouge
