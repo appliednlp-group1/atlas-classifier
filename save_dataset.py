@@ -39,7 +39,7 @@ def run(bert_model: str,
     dataset.save_to_disk(os.path.join(index_dir, 'datasets'))
     
     ds = dataset['train']
-    ds = ds.add_faiss_index('embeddings')
+    ds = ds.add_faiss_index('agnews')
     
     ds.save_faiss_index('agnews', os.path.join(index_dir, 'agnews.faiss'))
 
