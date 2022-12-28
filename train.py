@@ -23,7 +23,8 @@ def run(bert_model: str,
         index_path: str,
         batch_size: int,
         num_epochs: int,
-        lr: float,
+        q_encoder_lr: float,
+        classifier_lr: float,
         out_dir: str,
         use_ratio: float,
         ):
@@ -61,9 +62,9 @@ def run(bert_model: str,
                                    use_ratio=use_ratio)
     
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam([{'params': q_encoder.parameters()},
-                                  {'params': classifier.parameters()}
-                                  ], lr=lr)
+    optimizer = torch.optim.Adam(
+        [{'params': q_encoder.parameters(), 'lr': q_encoder_lr},
+         {'params': classifier.parameters(), 'lr': classifier_lr}])
 
     with open(os.path.join(out_dir, 'result.csv'), 'a') as f:
         csv.writer(f).writerow([
@@ -73,6 +74,8 @@ def run(bert_model: str,
             'test_loss',
             'train_acc',
             'test_acc'])
+    
+    best_test_acc = 0.
         
     for epoch in range(1, num_epochs + 1):
         q_encoder.train()
@@ -142,6 +145,8 @@ def run(bert_model: str,
         train_acc = train_corrects / train_total * 100
         test_acc = test_corrects / test_total * 100
         
+        best_test_acc = max(test_acc, best_test_acc)
+        
         print(f'[Epoch {epoch:04}]: '
               f'train loss {train_loss:.3f} / '
               f'test loss {test_loss:.3f} / '
@@ -174,6 +179,8 @@ def run(bert_model: str,
         else:
             classifier.save_pretrained(epoch_classifier_dir)
 
+    return best_test_acc
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -198,14 +205,17 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs',
                         type=int,
                         default=50)
-    parser.add_argument('--lr',
+    parser.add_argument('--q_encoder_lr',
+                        type=float,
+                        default=0.000001)
+    parser.add_argument('--classifier_lr',
                         type=float,
                         default=0.00001)
     parser.add_argument('--out_dir',
                         type=str,
                         default='results/test1')
     parser.add_argument('--use_ratio',
-                        type=str,
+                        type=float,
                         default=0.1)
     
     args = parser.parse_args()
@@ -217,8 +227,7 @@ if __name__ == '__main__':
         args.index_path,
         args.batch_size,
         args.num_epochs,
-        args.lr,
+        args.q_encoder_lr,
+        args.classifier_lr,
         args.out_dir,
         args.use_ratio)
-
-    
