@@ -162,22 +162,24 @@ def run(bert_model: str,
                 train_acc,
                 test_acc])
         
-        epoch_dir = os.path.join(out_dir, f'acc{test_acc:.2f}_e{epoch}')
-        epoch_tok_dir = os.path.join(epoch_dir, 'tokenizer')
-        os.makedirs(epoch_tok_dir, exist_ok=True)
-        tokenizer.save_pretrained(epoch_tok_dir)
-        epoch_q_encoder_dir = os.path.join(epoch_dir, 'model/q_encoder')
-        os.makedirs(epoch_q_encoder_dir, exist_ok=True)
-        if device == 'cuda:0':
-            q_encoder.module.save_pretrained(epoch_q_encoder_dir)
-        else:
-            q_encoder.save_pretrained(epoch_q_encoder_dir)
-        epoch_classifier_dir = os.path.join(epoch_dir, 'model/classifier')
-        os.makedirs(epoch_classifier_dir, exist_ok=True)
-        if device == 'cuda:0':
-            classifier.module.save_pretrained(epoch_classifier_dir)
-        else:
-            classifier.save_pretrained(epoch_classifier_dir)
+        if best_test_acc == test_acc:
+            tok_dir = os.path.join(out_dir, 'tokenizer')
+            os.makedirs(tok_dir, exist_ok=True)
+            tokenizer.save_pretrained(tok_dir)
+            
+            q_encoder_dir = os.path.join(out_dir, 'model/q_encoder')
+            os.makedirs(q_encoder_dir, exist_ok=True)
+            if device == 'cuda:0':
+                q_encoder.module.save_pretrained(q_encoder_dir)
+            else:
+                q_encoder.save_pretrained(q_encoder_dir)
+
+            classifier_dir = os.path.join(out_dir, 'model/classifier')
+            os.makedirs(classifier_dir, exist_ok=True)
+            if device == 'cuda:0':
+                classifier.module.save_pretrained(classifier_dir)
+            else:
+                classifier.save_pretrained(classifier_dir)
 
     return best_test_acc
 
