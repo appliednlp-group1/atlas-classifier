@@ -1,0 +1,13 @@
+transformers
+rouge
+tensorboard
+wget
+optuna
+numpy
+pandas
+matplotlib
+scikit-learn
+torch
+faiss
+faiss-gpu
+datasets
