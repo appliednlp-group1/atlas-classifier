@@ -22,8 +22,8 @@ def tuning(bert_model: str,
         trial_id = str(trial._trial_id)
         out_dir = os.path.join(result_dir, trial_name, trial_id)
         
-        q_encoder_lr = trial.suggest_longuniform('q_encoder_lr', 1e-6, 1e-4)
-        classifier_lr = trial.suggest_longuniform('classifier_lr', 1e-6, 1e-4)
+        q_encoder_lr = trial.suggest_loguniform('q_encoder_lr', 1e-6, 1e-4)
+        classifier_lr = trial.suggest_loguniform('classifier_lr', 1e-6, 1e-4)
         
         return run(bert_model,
                    contriever_model,
