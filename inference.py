@@ -24,9 +24,10 @@ def run(out_dir: str,
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     
     tokenizer = transformers.AutoTokenizer.from_pretrained(os.path.join(out_dir, 'tokenizer'))
-    q_encoder = build_q_encoder(bert_model,
-                                contriever_path,
-                                )
+    # q_encoder = build_q_encoder(bert_model,
+    #                             contriever_path,
+    #                             )
+    q_encoder = BertModel.from_pretrained(os.path.join(out_dir, 'model/q_encoder'))
     classifier = BertForSequenceClassification.from_pretrained(os.path.join(out_dir, 'model/classifier'))
     
     if device == 'cuda:0':
