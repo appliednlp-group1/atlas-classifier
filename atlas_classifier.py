@@ -87,7 +87,7 @@ if __name__ == '__main__':
     
     config = build_config(opt['question_model']).to(device)
     q_encoder = build_q_encoder(opt['question_model']).to(device)
-    clasifier = build_classifier(opt['bert_path'], 3).to(device)
+    classifier = build_classifier(opt['bert_path'], 3).to(device)
     retriever = build_retriever(opt['question_model'],
                                 opt['indexdata_path'],
                                 opt['index_path'])
@@ -101,7 +101,7 @@ if __name__ == '__main__':
                   mask,
                   q_encoder,
                   retriever,
-                  clasifier,
+                  classifier,
                   n_docs=config.n_docs,
                   output_attentions=config.output_attentions,
                   )

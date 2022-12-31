@@ -27,6 +27,7 @@ def run(bert_model: str,
         classifier_lr: float,
         out_dir: str,
         use_ratio: float,
+        no_retriever: bool,
         ):
     os.makedirs(out_dir, exist_ok=True)
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -98,6 +99,7 @@ def run(bert_model: str,
                           classifier,
                           n_docs=config.n_docs,
                           output_attentions=config.output_attentions,
+                          no_retriever=no_retriever,
                           )
             pred = out['logits']
             optimizer.zero_grad()
@@ -131,6 +133,7 @@ def run(bert_model: str,
                               classifier,
                               n_docs=config.n_docs,
                               output_attentions=config.output_attentions,
+                              no_retriever=no_retriever,
                               )
                 pred = out['logits']
                 loss = criterion(pred, label)
@@ -220,6 +223,8 @@ if __name__ == '__main__':
     parser.add_argument('--use_ratio',
                         type=float,
                         default=0.1)
+    parser.add_argument('--no_retriever',
+                        actions='store_true')
     
     args = parser.parse_args()
     
@@ -233,4 +238,5 @@ if __name__ == '__main__':
         args.q_encoder_lr,
         args.classifier_lr,
         args.out_dir,
-        args.use_ratio)
+        args.use_ratio,
+        args.no_retriever)
