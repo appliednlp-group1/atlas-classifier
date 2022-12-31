@@ -54,12 +54,13 @@ def run(bert_model: str,
                                     tokenizer,
                                     batch_size,
                                     phase='train',
-                                    use_ratio=use_ratio)
+                                    use_ratio=use_ratio,
+                                    )
     test_loader = build_dataloader('ag_news',
                                    tokenizer,
                                    batch_size,
                                    phase='test',
-                                   use_ratio=use_ratio)
+                                   )
     
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
