@@ -12,7 +12,21 @@ def forward(input_ids: Optional[torch.LongTensor],
             n_docs: int = 5,
             output_attentions: bool = True,
             last_layer: int = 1,
+            no_retriever: bool = False,
             ) -> Dict[str, torch.Tensor]:
+    if no_retriever:
+        cls_outputs = classifier(input_ids=input_ids,
+                                 attention_mask=attention_mask,
+                                 output_attentions=output_attentions,
+                                 return_dict=True)
+        logits = cls_outputs.logits
+
+        return {
+            'context_input_ids': input_ids,
+            'context_attention_mask': attention_mask,
+            'logits': logits,
+        }
+
     question_enc_outputs = question_encoder(input_ids,
                                             attention_mask=attention_mask,
                                             return_dict=True)
