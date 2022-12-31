@@ -20,6 +20,7 @@ def run(out_dir: str,
         index_path: str,
         batch_size: int,
         use_ratio: float,
+        no_retriever: bool,
         ):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     
@@ -70,6 +71,7 @@ def run(out_dir: str,
                           classifier,
                           n_docs=config.n_docs,
                           output_attentions=config.output_attentions,
+                          no_retriever=no_retriever,
                           )
             source_texts = tokenizer.batch_decode(input_ids,
                                                   skip_special_tokens=True,
@@ -125,6 +127,8 @@ if __name__ == '__main__':
     parser.add_argument('--use_ratio',
                         type=str,
                         default=0.1)
+    parser.add_argument('--no_retriever',
+                        action='store_true')
     
     args = parser.parse_args()
     
@@ -136,4 +140,5 @@ if __name__ == '__main__':
         args.index_path,
         args.batch_size,
         args.use_ratio,
+        args.no_retriever,
         )
