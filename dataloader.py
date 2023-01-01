@@ -1,6 +1,31 @@
+import os
+import json
+
 import torch
 from datasets import load_dataset
+from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+
+
+def build_dataset(dataset_name: str,
+                  phase: str = 'train',
+                  use_ratio: float = 1.0,
+                  ) -> Dataset:
+    assert phase in ('train', 'test')
+    assert dataset_name == 'ag_news'
+    indices_path = os.path.join(os.path.dirname(__file__), 'indices.json')
+
+    dataset = load_dataset(dataset_name)[phase]
+    use_num = int(len(dataset) * use_ratio)
+    with open(indices_path, 'r') as f:
+        indices = json.load(f)
+    indices = indices[:use_num]
+
+    dataset = dataset.filter(lambda x: x[1] in indices,
+                             with_indices=True,
+                             )
+
+    return dataset
 
 
 def build_dataloader(dataset_name: str,
@@ -8,10 +33,7 @@ def build_dataloader(dataset_name: str,
                      batch_size: int,
                      phase: str = 'train',
                      use_ratio: float = 1.0) -> DataLoader:
-    assert phase in ('train', 'test')
-    dataset = load_dataset(dataset_name)[phase]
-    use_num = int(len(dataset) * use_ratio)
-    dataset, _ = torch.utils.data.random_split(dataset, [use_num, len(dataset) - use_num])
+    dataset = build_dataset(dataset_name, phase, use_ratio)
     
     def get_collater(t):
         def collater(d):

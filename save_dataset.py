@@ -1,8 +1,8 @@
 import os.path
 
 import torch
-from datasets import load_dataset
 
+from dataloader import build_dataset
 from build_contriever import build_q_encoder, build_q_tokenizer
 
 
@@ -11,14 +11,18 @@ def run(bert_model: str,
         contriever_path: str,
         index_dir: str,
         batch_size: int = 128,
+        use_ratio: float = 1.0,
         ) -> None:
+    out_dir = os.path.join(index_dir, f'r{use_ratio}')
+    os.makedirs(out_dir, exist_ok=True)
+    
     tokenizer = build_q_tokenizer(contriever_model)
     q_encoder = build_q_encoder(bert_model, contriever_path)
     q_encoder.cuda()
     q_encoder.eval()
 
     with torch.no_grad():
-        dataset = load_dataset('ag_news')
+        dataset = build_dataset('ag_news', phase='train', use_ratio=use_ratio)
         
         def process(example):
             inputs = tokenizer(example['text'],
@@ -36,16 +40,25 @@ def run(bert_model: str,
         
         dataset = dataset.map(process, batched=True, batch_size=batch_size)
     
-    dataset.save_to_disk(os.path.join(index_dir, 'datasets'))
+    dataset.save_to_disk(os.path.join(out_dir, 'datasets'))
     
     ds = dataset['train']
     ds = ds.add_faiss_index('embeddings', index_name='agnews')
     
-    ds.save_faiss_index('agnews', os.path.join(index_dir, 'agnews.faiss'))
+    ds.save_faiss_index('agnews', os.path.join(out_dir, 'agnews.faiss'))
 
 
 if __name__ == '__main__':
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--use_ratio',
+                        type=float,
+                        default=0.01)
+    args = parser.parse_args()
+    
     run('bert-base-uncased',
         'facebook/contriever',
         '../models/models/atlas/base/model.pth.tar',
-        '../data')
+        '../data',
+        use_ratio=args.use_ratio)
