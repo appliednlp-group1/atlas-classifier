@@ -21,7 +21,7 @@ def build_dataset(dataset_name: str,
         indices = json.load(f)
     indices = indices[:use_num]
 
-    dataset = dataset.filter(lambda x: x[1] in indices,
+    dataset = dataset.filter(lambda x, idx: idx in indices,
                              with_indices=True,
                              )
 
