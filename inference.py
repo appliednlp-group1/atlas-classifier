@@ -19,6 +19,7 @@ def run(out_dir: str,
         dataset_path: str,
         index_path: str,
         batch_size: int,
+        n_docs: int,
         use_ratio: float,
         no_retriever: bool,
         ):
@@ -69,9 +70,10 @@ def run(out_dir: str,
                           q_encoder,
                           retriever,
                           classifier,
-                          n_docs=config.n_docs,
+                          n_docs=n_docs,
                           output_attentions=config.output_attentions,
                           no_retriever=no_retriever,
+                          no_classifier=True,
                           )
             source_texts = tokenizer.batch_decode(input_ids,
                                                   skip_special_tokens=True,
@@ -124,6 +126,9 @@ if __name__ == '__main__':
     parser.add_argument('--out_dir',
                         type=str,
                         default='results/test1')
+    parser.add_argument('--n_docs',
+                        type=str,
+                        default=1000)
     parser.add_argument('--use_ratio',
                         type=str,
                         default=0.1)

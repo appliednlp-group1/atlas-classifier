@@ -13,6 +13,7 @@ def forward(input_ids: Optional[torch.LongTensor],
             output_attentions: bool = True,
             last_layer: int = 1,
             no_retriever: bool = False,
+            no_classifier: bool = False,
             ) -> Dict[str, torch.Tensor]:
     if no_retriever:
         cls_outputs = classifier(input_ids=input_ids,
@@ -37,6 +38,25 @@ def forward(input_ids: Optional[torch.LongTensor],
                                   prefix=retriever.config.prefix,
                                   n_docs=n_docs,
                                   return_tensors='pt')
+    
+    if no_classifier:
+        context_input_ids = retriever_outputs['context_input_ids']
+        context_attention_mask = retriever_outputs['context_attention_mask']
+        retrieved_doc_embeds = retriever_outputs['retrieved_doc_embeds']
+        retrieved_doc_ids = retriever_outputs['doc_ids']
+        return {
+            'doc_scores': torch.bmm(
+                question_encoder_last_hidden_state.unsqueeze(1),
+                retrieved_doc_embeds.transpose(1, 2),
+                ).squeeze(1),
+            'context_input_ids': context_input_ids,
+            'context_attention_mask': context_attention_mask,
+            'retrieved_doc_embeds': retrieved_doc_embeds,
+            'retrieved_doc_ids': retrieved_doc_ids,
+            'question_enc_last_hidden_state': question_encoder_last_hidden_state,
+            'question_enc_hidden_states': question_enc_outputs.hidden_states,
+            'question_enc_attentions': question_enc_outputs.attentions,
+        }
     
     context_input_ids = retriever_outputs['context_input_ids'].to(input_ids)
     context_attention_mask = retriever_outputs['context_attention_mask'].to(input_ids)
