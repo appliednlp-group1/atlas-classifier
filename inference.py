@@ -127,7 +127,7 @@ if __name__ == '__main__':
                         type=str,
                         default='results/test1')
     parser.add_argument('--n_docs',
-                        type=str,
+                        type=int,
                         default=1000)
     parser.add_argument('--use_ratio',
                         type=str,
