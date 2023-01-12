@@ -144,6 +144,7 @@ if __name__ == '__main__':
         args.dataset_path,
         args.index_path,
         args.batch_size,
+        args.n_docs,
         args.use_ratio,
         args.no_retriever,
         )
