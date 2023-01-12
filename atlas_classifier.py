@@ -45,8 +45,8 @@ def forward(input_ids: Optional[torch.LongTensor],
         retrieved_doc_embeds = retriever_outputs['retrieved_doc_embeds']
         retrieved_doc_ids = retriever_outputs['doc_ids']
         a = question_encoder_last_hidden_state.unsqueeze(1).cpu()
-        b = retrieved_doc_embeds
-        doc_scores = torch.bmm(a, b.transpose(1, 2)) / (torch.norm(a, p=2, dim=2, keepdim=True) * torch.norm(b, p=2, dim=2, keepdim=True))
+        b = retrieved_doc_embeds.transpose(1, 2)
+        doc_scores = torch.bmm(a, b) / (torch.norm(a, p=2, dim=2) * torch.norm(b, p=2, dim=2, keepdim=True))
         return {
             'doc_scores': doc_scores.squeeze(),
             'context_input_ids': context_input_ids,
