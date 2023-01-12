@@ -84,7 +84,7 @@ def run(out_dir: str,
                 source_text = source_texts[i]
                 doc_score = doc_scores[i]
                 target_texts = tokenizer.batch_decode(
-                    context_input_ids[config.n_docs*i:config.n_docs*(1+i), :],
+                    context_input_ids[n_docs*i:n_docs*(1+i), :],
                     skip_special_tokens=True,
                     )
                 target_texts = [t.split(r'/ ')[1].split(r' / / ')[0] for t in target_texts]
@@ -95,7 +95,7 @@ def run(out_dir: str,
                             'score': float(doc_score[j]),
                             'text': target_texts[j],
                         }
-                        for j in range(config.n_docs)
+                        for j in range(n_docs)
                     ]
                 })
     
