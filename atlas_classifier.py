@@ -48,7 +48,7 @@ def forward(input_ids: Optional[torch.LongTensor],
         b = retrieved_doc_embeds
         doc_scores = torch.bmm(a, b.transpose(1, 2)) / (torch.norm(a, p=2, dim=2, keepdim=True) * torch.norm(b, p=2, dim=2, keepdim=True))
         return {
-            'doc_scores': doc_scores.squeeze(1),
+            'doc_scores': doc_scores.squeeze(),
             'context_input_ids': context_input_ids,
             'context_attention_mask': context_attention_mask,
             'retrieved_doc_embeds': retrieved_doc_embeds,
