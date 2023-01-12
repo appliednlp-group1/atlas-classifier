@@ -46,7 +46,7 @@ def forward(input_ids: Optional[torch.LongTensor],
         retrieved_doc_ids = retriever_outputs['doc_ids']
         return {
             'doc_scores': torch.bmm(
-                question_encoder_last_hidden_state.unsqueeze(1),
+                question_encoder_last_hidden_state.unsqueeze(1).cpu(),
                 retrieved_doc_embeds.transpose(1, 2),
                 ).squeeze(1),
             'context_input_ids': context_input_ids,
